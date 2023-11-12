@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+    <!--    引入外部属性配置文件-->
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+    <!--    配置数据源-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="driverClassName" value="${jdbc.driver}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean>
+    <!--    配置sqlSessionFactoryBean-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--    注入数据源-->
+        <property name="dataSource" ref="dataSource"/>
+        <!--    指定mybatis核心配置文件-->
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+        <!--        指定pojo别名-->
+        <property name="typeAliasesPackage" value="com.powernode.crm.settings.pojo,com.powernode.crm.workbench.pojo"/>
+
+    </bean>
+    <!--    配置Mapper扫描配置器，主要扫描mapper接口，生成代理类-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!--        指定要扫描的包-->
+        <property name="basePackage" value="com.powernode.crm.settings.mapper
+                                            ,com.powernode.crm.workbench.mapper"/>
+
+<!--        ！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！不加可能会出问题,这玩意有什么用啊，加上去好像没什么用-->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+    </bean>
+    <!--    事务管理器-->
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+    <!--    启用事务注解-->
+    <tx:annotation-driven transaction-manager="txManager"/>
+    <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+
+</beans>
